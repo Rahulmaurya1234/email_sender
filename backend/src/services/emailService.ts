@@ -197,8 +197,8 @@ export class EmailService {
   private async sendBulkCompletionNotification(
     job: EmailJob,
     notificationSettings: {
-      email?: string;
-      userId?: string;
+      email: string;
+      userId: string;
       configName?: string;
     },
     startTime: string,
@@ -206,14 +206,6 @@ export class EmailService {
     failedCount: number
   ): Promise<void> {
     try {
-      // Guard: ensure required notification fields are present before proceeding
-      if (!notificationSettings?.email || !notificationSettings?.userId) {
-        console.warn(
-          "Notification settings missing required fields (email or userId), skipping completion notification."
-        );
-        return;
-      }
-
       const { notificationService } = await import("./notificationService");
 
       const jobStats = {

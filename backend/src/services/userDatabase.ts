@@ -427,9 +427,8 @@ class UserDatabase {
       "from_name",
       "is_default",
     ];
-    // Only include allowed fields that are explicitly provided (not undefined)
-    const updateFields = (Object.keys(updates) as (keyof UserSMTPConfig)[]).filter(
-      (key) => allowedFields.includes(key) && updates[key] !== undefined
+    const updateFields = Object.keys(updates).filter((key) =>
+      allowedFields.includes(key)
     );
 
     if (updateFields.length === 0) {
@@ -450,12 +449,10 @@ class UserDatabase {
     const setClause = updateFields.map((field) => `${field} = ?`).join(", ");
     const values = updateFields.map((field) => {
       if (field === "secure" || field === "is_default") {
-        const val = updates[field] as boolean | undefined | null;
-        return val === undefined || val === null ? 0 : (val ? 1 : 0);
+        return updates[field as keyof UserSMTPConfig] ? 1 : 0;
       }
-      const v = updates[field] as string | number | null | undefined;
-      return v === undefined ? null : v;
-    }) as (string | number | null)[];
+      return updates[field as keyof UserSMTPConfig];
+    });
 
     const result = this.db
       .prepare(

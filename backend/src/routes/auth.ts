@@ -55,8 +55,8 @@ app.post("/auth/register", async (c) => {
 
       setCookie(c, "session_token", token, {
         httpOnly: true,
-        secure: isHTTPS , // Only secure if actually on HTTPS
-        sameSite: "Lax",
+        secure: isHTTPS, // Only secure if actually on HTTPS
+        sameSite: "lax",
         maxAge: 24 * 60 * 60,
         path: "/",
       });
@@ -127,7 +127,7 @@ app.post("/auth/login", async (c) => {
     setCookie(c, "session_token", token, {
       httpOnly: true,
       secure: isHTTPS, // Only secure if actually on HTTPS
-      sameSite: "Lax",
+      sameSite: "lax",
       maxAge: 24 * 60 * 60,
       path: "/",
     });
