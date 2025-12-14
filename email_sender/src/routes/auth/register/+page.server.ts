@@ -1,15 +1,15 @@
 import type { Actions } from './$types';
 import { fail, redirect } from '@sveltejs/kit';
-import { userDatabase } from '$lib/server/userDatabase';
-
 
 export const actions: Actions = {
-  default: async ({ request, cookies }) => {
+  default: async ({ request, cookies, fetch }) => {
     const formData = await request.formData();
+
     const name = formData.get('name')?.toString().trim();
     const email = formData.get('email')?.toString().trim().toLowerCase();
     const password = formData.get('password')?.toString();
 
+    // ✅ Validation
     if (!name || !email || !password) {
       return fail(400, { error: '⚠️ Please fill all fields' });
     }
@@ -19,11 +19,23 @@ export const actions: Actions = {
     }
 
     try {
-      const userId = await userDatabase.createUser(email, name, password);
+      // ✅ API CALL (Node → Bun)
+      const res = await fetch('http://localhost:3001/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ name, email, password })
+      });
 
-      // Create session
-      const token = await userDatabase.createSession(userId);
-      cookies.set('session', token, {
+      const data = await res.json();
+
+      if (!res.ok) {
+        return fail(400, { error: data.error || 'Registration failed' });
+      }
+
+      // ✅ Cookie set
+      cookies.set('session', data.token, {
         path: '/',
         httpOnly: true,
         sameSite: 'strict',
@@ -31,8 +43,9 @@ export const actions: Actions = {
       });
 
       throw redirect(303, '/app/dashboard');
-    } catch (err) {
-      return fail(400, { error: err instanceof Error ? err.message : 'Registration failed' });
+    } catch (error) {
+      console.error('Register error:', error);
+      return fail(500, { error: 'Server error. Please try again.' });
     }
   }
 };
